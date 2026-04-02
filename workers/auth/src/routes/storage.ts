@@ -12,6 +12,15 @@ export const storage = new Hono<{
         SUPABASE_URL: string
         SUPABASE_ANON_KEY: string
     }
+    Variables: {
+        user: {
+            id: string
+            email: string
+            user_metadata: {
+                username: string
+            }
+        }
+    }
 }>()
 
 // 🔹 1. Generate upload URL
@@ -23,9 +32,35 @@ storage.post('/upload-url', async (c) => {
             return c.json({ error: 'Missing fields' }, 400)
         }
 
+        //  STEP 1: get user from middleware
+        const user = c.get('user')
+
+        const supabase = getSupabaseClient(c.env)
+
+        //  STEP 2: fetch game
+        const { data: game, error: gameError } = await supabase
+            .from('games')
+            .select('*')
+            .eq('id', gameId)
+            .single()
+
+        if (gameError || !game) {
+            return c.json({ error: 'Game not found' }, 404)
+        }
+
+        //  STEP 3: ownership check
+        if (game.creator_id !== user.id) {
+            return c.json({ error: 'Not allowed' }, 403)
+        }
+
+        //  STEP 4: validate platform
+        if (!['windows', 'mac', 'linux'].includes(platform)) {
+            return c.json({ error: 'Invalid platform' }, 400)
+        }
+
         const s3 = getS3(c.env)
 
-        const key = `games/${gameId}/builds/${Date.now()}-${fileName}`
+        const key = `games/${gameId}/builds/${platform}/${Date.now()}-${fileName}`
 
         const command = new PutObjectCommand({
             Bucket: 'pitch-games',

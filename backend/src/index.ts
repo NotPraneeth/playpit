@@ -22,5 +22,5 @@ app.route('/auth', auth)
 app.route('/storage', storage)
 app.route('/games', games)
 
-
+export type AppType = typeof app
 export default app

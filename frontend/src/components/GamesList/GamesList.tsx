@@ -4,6 +4,7 @@ type Game = {
     id: string
     title: string
     creator_name?: string
+    thumbnail?: string
 }
 
 export default function GamesList({ games }: { games: Game[] }) {

@@ -10,51 +10,71 @@ export const storage = new Hono<StorageContext>()
 // 🔹 1. Generate upload URL
 storage.post('/upload-url', async (c) => {
     try {
-        const { gameId, fileName, platform } = await c.req.json()
+        const { gameId, fileName, type, platform } = await c.req.json()
 
-        if (!gameId || !fileName || !platform) {
+        if (!gameId || !fileName || !type) {
             return c.json({ error: 'Missing fields' }, 400)
         }
 
-        //  STEP 1: get user from middleware
         const user = c.get('user')
         const token = c.get('token')
         const supabase = getSupabaseClient(c.env, token)
 
-        //  STEP 2: fetch game
-        const { data: game, error: gameError } = await supabase
+        // ownership check
+        const { data: game } = await supabase
             .from('games')
-            .select('*')
+            .select('id, creator_id')
             .eq('id', gameId)
             .single()
 
-        if (gameError || !game) {
-            return c.json({ error: 'Game not found' }, 404)
-        }
-
-        //  STEP 3: ownership check
-        if (game.creator_id !== user.id) {
+        if (!game || game.creator_id !== user.id) {
             return c.json({ error: 'Not allowed' }, 403)
         }
 
-        //  STEP 4: validate platform
-        if (!['windows', 'mac', 'linux'].includes(platform)) {
-            return c.json({ error: 'Invalid platform' }, 400)
+        let key = ''
+        let contentType = ''
+
+        // handle thumbnail
+        if (type === 'thumbnail') {
+            if (!fileName.match(/\.(png|jpg|jpeg|webp)$/)) {
+                return c.json({ error: 'Invalid image type' }, 400)
+            }
+
+            key = `games/${gameId}/thumbnail/${Date.now()}-${fileName}`
+            contentType = 'image/*'
+        }
+
+        // handle build
+        if (type === 'build') {
+            if (!platform) {
+                return c.json({ error: 'Platform required' }, 400)
+            }
+
+            if (!['windows', 'mac', 'linux'].includes(platform)) {
+                return c.json({ error: 'Invalid platform' }, 400)
+            }
+
+            key = `games/${gameId}/builds/${platform}/${Date.now()}-${fileName}`
+            contentType = 'application/octet-stream'
+        }
+
+        if (!key) {
+            return c.json({ error: 'Invalid type' }, 400)
         }
 
         const s3 = getS3(c.env)
 
-        const key = `games/${gameId}/builds/${platform}/${Date.now()}-${fileName}`
-
         const command = new PutObjectCommand({
             Bucket: 'pitch-games',
             Key: key,
+            ContentType: contentType,
         })
 
         const url = await getSignedUrl(s3, command, { expiresIn: 60 })
 
         return c.json({ url, key })
     } catch (err) {
+        console.error(err)
         return c.json({ error: 'Failed to generate upload URL' }, 500)
     }
 })

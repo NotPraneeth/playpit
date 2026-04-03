@@ -3,25 +3,9 @@ import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getS3 } from '../lib/r2'
 import { getSupabaseClient } from '../lib/supabase'
+import type { StorageContext } from '../types'
 
-export const storage = new Hono<{
-    Bindings: {
-        R2_ACCESS_KEY: string
-        R2_SECRET_KEY: string
-        R2_ACCOUNT_ID: string
-        SUPABASE_URL: string
-        SUPABASE_ANON_KEY: string
-    }
-    Variables: {
-        user: {
-            id: string
-            email: string
-            user_metadata: {
-                username: string
-            }
-        }
-    }
-}>()
+export const storage = new Hono<StorageContext>()
 
 // 🔹 1. Generate upload URL
 storage.post('/upload-url', async (c) => {
@@ -34,8 +18,8 @@ storage.post('/upload-url', async (c) => {
 
         //  STEP 1: get user from middleware
         const user = c.get('user')
-
-        const supabase = getSupabaseClient(c.env)
+        const token = c.get('token')
+        const supabase = getSupabaseClient(c.env, token)
 
         //  STEP 2: fetch game
         const { data: game, error: gameError } = await supabase
@@ -81,7 +65,8 @@ storage.post('/save-build', async (c) => {
     try {
         const { gameId, fileName, filePath, platform } = await c.req.json()
 
-        const supabase = getSupabaseClient(c.env)
+        const token = c.get('token')
+        const supabase = getSupabaseClient(c.env, token)
 
         const { error } = await supabase.from('game_builds').insert({
             game_id: gameId,
@@ -112,7 +97,8 @@ storage.get('/download', async (c) => {
             return c.json({ error: 'Missing query params' }, 400)
         }
 
-        const supabase = getSupabaseClient(c.env)
+        const token = c.get('token')
+        const supabase = getSupabaseClient(c.env, token)
 
         // 🔥 get latest build for platform
         const { data, error } = await supabase

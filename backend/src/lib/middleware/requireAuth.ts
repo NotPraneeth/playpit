@@ -10,13 +10,14 @@ export const requireAuth = async (c: any, next: any) => {
     const token = authHeader.replace('Bearer ', '')
     const supabase = getSupabaseClient(c.env, token)
 
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+    const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
         return c.json({ error: 'Invalid or expired token' }, 401)
     }
 
     c.set('user', user)
+    c.set('token', token)
 
     await next()
 }

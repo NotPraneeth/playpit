@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
 import { getSupabaseClient } from '../lib/supabase'
+import type { BaseContext } from '../types'
 
-export const auth = new Hono<{ Bindings: { SUPABASE_URL: string; SUPABASE_ANON_KEY: string } }>()
+export const auth = new Hono<BaseContext>()
 
 // POST /auth/register
 auth.post('/register', async (c) => {
@@ -271,7 +272,6 @@ auth.post('/refresh', async (c) => {
 
 // GET /auth/me
 auth.get('/me', async (c) => {
-  const supabase = getSupabaseClient(c.env)
   const authHeader = c.req.header('Authorization')
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -279,8 +279,11 @@ auth.get('/me', async (c) => {
   }
 
   const token = authHeader.replace('Bearer ', '')
+  const supabase = getSupabaseClient(c.env, token)
 
-  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+
+  const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error || !user) {
     return c.json({ error: 'Invalid or expired token' }, 401)

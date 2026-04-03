@@ -5,12 +5,15 @@ import { games } from './routes/games'
 
 import { requireAuth } from './lib/middleware/requireAuth'
 
-const app = new Hono<{ Bindings: { SUPABASE_URL: string; SUPABASE_ANON_KEY: string } }>()
+import type { BaseContext } from './types'
+
+const app = new Hono<BaseContext>()
 
 // Health check
 app.get('/', (c) => c.json({ status: 'ok' }))
 
 // Middleware
+app.use('/games', requireAuth)
 app.use('/games/*', requireAuth)
 app.use('/storage/*', requireAuth)
 

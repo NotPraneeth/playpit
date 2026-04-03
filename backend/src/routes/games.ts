@@ -29,8 +29,8 @@ games.post('/create', async (c) => {
 
 games.get('/', async (c) => {
     try {
-        const token = c.get('token')
-        const supabase = getSupabaseClient(c.env, token)
+        // const token = c.get('token')
+        const supabase = getSupabaseClient(c.env)
 
         const { data, error } = await supabase
             .from('games')
@@ -41,7 +41,7 @@ games.get('/', async (c) => {
             return c.json({ error: error.message }, 500)
         }
 
-        return c.json({ games: data }, 200)
+        return c.json(data, 200)
 
     } catch (err) {
         console.error('Unexpected error:', err)

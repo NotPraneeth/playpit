@@ -13,8 +13,7 @@ const app = new Hono<BaseContext>()
 app.get('/', (c) => c.json({ status: 'ok' }))
 
 // Middleware
-app.use('/games', requireAuth)
-app.use('/games/*', requireAuth)
+app.use('/games/create', requireAuth)
 app.use('/storage/*', requireAuth)
 
 // Auth routes

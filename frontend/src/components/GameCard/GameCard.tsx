@@ -3,7 +3,6 @@ import Link from 'next/link'
 type Game = {
     id: string
     title: string
-    thumbnail: string
     creator_name?: string
 }
 
@@ -14,11 +13,6 @@ export default function GameCard({ game }: { game: Game }) {
 
                 {/* Thumbnail */}
                 <div className="w-full h-40 bg-gray-200 rounded overflow-hidden">
-                    <img
-                        src={game.thumbnail}
-                        alt={game.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition"
-                    />
                 </div>
 
                 {/* Info */}

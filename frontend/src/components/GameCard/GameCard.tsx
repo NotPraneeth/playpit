@@ -1,9 +1,11 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 type Game = {
     id: string
     title: string
     creator_name?: string
+    description?: string
     thumbnail?: string
 }
 
@@ -15,15 +17,16 @@ export default function GameCard({ game }: { game: Game }) {
     console.log(imageUrl)
     return (
         <Link href={`/games/${game.id}`}>
-            <div className="group cursor-pointer">
+            <div className="group cursor-pointer w-60 rounded-2xl p-2  bg-[var(--white)] border-3 border-black text-black">
 
                 {/* Thumbnail */}
-                <div className="w-full h-40 bg-gray-200 rounded overflow-hidden">
+                <div className="w-full h-40 bg-gray-200 rounded-t-xl p-5 overflow-hidden relative">
                     {imageUrl ? (
-                        <img
+                        <Image
                             src={imageUrl}
                             alt={game.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition"
+                            fill
+                            className="w-full h-full aspect-[16/9] group-hover:scale-105 transition"
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
@@ -33,14 +36,14 @@ export default function GameCard({ game }: { game: Game }) {
                 </div>
 
                 {/* Info */}
-                <div className="mt-2">
-                    <h3 className="text-sm font-medium">
+                <div className="mt-2 p-2  font-tertiary">
+                    <h3 className="text-base uppercase font-semibold tracking-tight">
                         {game.title}
                     </h3>
 
-                    {game.creator_name && (
+                    {game.description && (
                         <p className="text-xs text-gray-500">
-                            {game.creator_name}
+                            {game.description}
                         </p>
                     )}
                 </div>

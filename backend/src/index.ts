@@ -14,7 +14,7 @@ app.get('/', (c) => c.json({ status: 'ok' }))
 
 // Middleware
 app.use('/games/create', requireAuth)
-app.use('/games/update-thumbnail', requireAuth)
+app.use('/games/finalize', requireAuth)
 app.use('/storage/*', requireAuth)
 
 // Auth routes

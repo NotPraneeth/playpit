@@ -8,11 +8,11 @@ import type { StorageContext } from '../types'
 export const storage = new Hono<StorageContext>()
 
 // 🔹 1. Generate upload URL
-storage.post('/upload-url', async (c) => {
+storage.post('/upload-urls', async (c) => {
     try {
-        const { gameId, fileName, type, platform } = await c.req.json()
+        const { gameId, files } = await c.req.json()
 
-        if (!gameId || !fileName || !type) {
+        if (!gameId || !files) {
             return c.json({ error: 'Missing fields' }, 400)
         }
 
@@ -31,80 +31,58 @@ storage.post('/upload-url', async (c) => {
             return c.json({ error: 'Not allowed' }, 403)
         }
 
-        let key = ''
-        let contentType = ''
+        const s3 = getS3(c.env)
+        const response: any = {}
 
-        // handle thumbnail
-        if (type === 'thumbnail') {
+        // 🔹 BUILD
+        if (files.build) {
+            const { fileName, platform } = files.build
+
+            if (!platform || !['windows', 'mac', 'linux'].includes(platform)) {
+                return c.json({ error: 'Invalid platform' }, 400)
+            }
+
+            const key = `games/${gameId}/builds/${platform}/${Date.now()}-${fileName}`
+
+            const command = new PutObjectCommand({
+                Bucket: 'pitch-games',
+                Key: key,
+                ContentType: 'application/octet-stream',
+            })
+
+            const url = await getSignedUrl(s3, command, { expiresIn: 60 })
+
+            response.build = { uploadUrl: url, key }
+        }
+
+        // 🔹 THUMBNAIL
+        if (files.thumbnail) {
+            const { fileName } = files.thumbnail
+
             if (!fileName.match(/\.(png|jpg|jpeg|webp)$/)) {
                 return c.json({ error: 'Invalid image type' }, 400)
             }
 
-            key = `games/${gameId}/thumbnail/${Date.now()}-${fileName}`
-            contentType = 'image/*'
+            const key = `games/${gameId}/thumbnail/${Date.now()}-${fileName}`
+
+            const command = new PutObjectCommand({
+                Bucket: 'pitch-games',
+                Key: key,
+                ContentType: 'image/*',
+            })
+
+            const url = await getSignedUrl(s3, command, { expiresIn: 60 })
+
+            response.thumbnail = { uploadUrl: url, key }
         }
 
-        // handle build
-        if (type === 'build') {
-            if (!platform) {
-                return c.json({ error: 'Platform required' }, 400)
-            }
-
-            if (!['windows', 'mac', 'linux'].includes(platform)) {
-                return c.json({ error: 'Invalid platform' }, 400)
-            }
-
-            key = `games/${gameId}/builds/${platform}/${Date.now()}-${fileName}`
-            contentType = 'application/octet-stream'
-        }
-
-        if (!key) {
-            return c.json({ error: 'Invalid type' }, 400)
-        }
-
-        const s3 = getS3(c.env)
-
-        const command = new PutObjectCommand({
-            Bucket: 'pitch-games',
-            Key: key,
-            ContentType: contentType,
-        })
-
-        const url = await getSignedUrl(s3, command, { expiresIn: 60 })
-
-        return c.json({ url, key })
+        return c.json(response)
     } catch (err) {
         console.error(err)
-        return c.json({ error: 'Failed to generate upload URL' }, 500)
+        return c.json({ error: 'Failed to generate upload URLs' }, 500)
     }
 })
 
-
-// 🔹 2. Save build to DB
-storage.post('/save-build', async (c) => {
-    try {
-        const { gameId, fileName, filePath, platform } = await c.req.json()
-
-        const token = c.get('token')
-        const supabase = getSupabaseClient(c.env, token)
-
-        const { error } = await supabase.from('game_builds').insert({
-            game_id: gameId,
-            file_name: fileName,
-            file_path: filePath,
-            platform,
-            version: 'v1',
-        })
-
-        if (error) {
-            return c.json({ error: error.message }, 500)
-        }
-
-        return c.json({ success: true })
-    } catch (err) {
-        return c.json({ error: 'Failed to save build' }, 500)
-    }
-})
 
 
 // 🔹 3. Dynamic download
@@ -148,3 +126,4 @@ storage.get('/download', async (c) => {
         return c.json({ error: 'Download failed' }, 500)
     }
 })
+

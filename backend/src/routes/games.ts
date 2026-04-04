@@ -17,7 +17,8 @@ games.post('/create', async (c) => {
         .insert({
             title,
             description,
-            creator_id: user.id
+            creator_id: user.id,
+            status: 'draft'
         })
         .select()
         .single()
@@ -104,21 +105,23 @@ games.get('/:id/builds', async (c) => {
     }
 })
 
-games.post('/update-thumbnail', async (c) => {
-    try {
-        const { gameId, thumbnail } = await c.req.json()
 
-        if (!gameId || !thumbnail) {
-            return c.json({ error: 'Missing fields' }, 400)
+games.post('/finalize', async (c) => {
+    try {
+        const { gameId, build, thumbnail } = await c.req.json()
+
+        if (!gameId || !build) {
+            return c.json({ error: 'Missing required fields' }, 400)
         }
 
         const user = c.get('user')
         const token = c.get('token')
         const supabase = getSupabaseClient(c.env, token)
 
+        // ownership check
         const { data: game } = await supabase
             .from('games')
-            .select('creator_id, thumbnail')
+            .select('creator_id')
             .eq('id', gameId)
             .single()
 
@@ -126,21 +129,47 @@ games.post('/update-thumbnail', async (c) => {
             return c.json({ error: 'Not allowed' }, 403)
         }
 
-        // 🔥 optional: delete old thumbnail (recommended later)
-        // if (game.thumbnail) { ... }
+        // 🔹 insert build
+        const { error: buildError } = await supabase
+            .from('game_builds')
+            .insert({
+                game_id: gameId,
+                file_path: build.filePath,
+                platform: build.platform,
+                version: 'v1',
+            })
 
-        const { data, error } = await supabase
-            .from('games')
-            .update({ thumbnail })
-            .eq('id', gameId)
-            .select()
-        console.log('update result:', data, error)
-        if (error) {
-            return c.json({ error: error.message }, 500)
+        if (buildError) {
+            return c.json({ error: buildError.message }, 500)
         }
 
-        return c.json({ success: true, game: data })
-    } catch {
-        return c.json({ error: 'Failed to update thumbnail' }, 500)
+        // 🔹 update game
+        const updateData: any = {
+            status: 'published',
+        }
+
+        if (thumbnail) {
+            updateData.thumbnail = thumbnail
+        }
+
+        const { error: gameError } = await supabase
+            .from('games')
+            .update(updateData)
+            .eq('id', gameId)
+
+        if (buildError) {
+            console.error('BUILD ERROR:', buildError)
+            return c.json({ error: (buildError as any).message }, 500)
+        }
+
+        if (gameError) {
+            console.error('GAME ERROR:', gameError)
+            return c.json({ error: (gameError as any).message }, 500)
+        }
+
+        return c.json({ success: true })
+    } catch (err) {
+        console.error('FINALIZE ERROR:', err)
+        return c.json({ error: 'Finalize failed', details: err }, 500)
     }
 })

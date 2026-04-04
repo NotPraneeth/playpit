@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
 import { getSupabaseClient } from '../lib/supabase'
+import { getSupabaseAdmin } from '../lib/supabaseAdmin'
+
 import type { BaseContext } from '../types'
 
 export const auth = new Hono<BaseContext>()
@@ -294,4 +296,31 @@ auth.get('/me', async (c) => {
     username: user.user_metadata.username,
     email: user.email
   }, 200)
+})
+
+// POST /auth/check-user
+auth.post('/check-user', async (c) => {
+  const { email } = await c.req.json()
+
+  if (!email || !email.includes('@')) {
+    return c.json({ error: 'Invalid email' }, 400)
+  }
+
+  try {
+    const supabaseAdmin = getSupabaseAdmin(c.env)
+
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers()
+
+    if (error) {
+      return c.json({ error: 'Failed to check user' }, 500)
+    }
+
+    const exists = data.users.some(
+      (user) => user.email?.toLowerCase() === email.toLowerCase()
+    )
+
+    return c.json({ exists })
+  } catch (err) {
+    return c.json({ error: 'Server error' }, 500)
+  }
 })

@@ -1,0 +1,93 @@
+'use client'
+
+import { useState } from 'react'
+
+export default function VerifyStep({
+    email,
+    onSuccess,
+}: {
+    email: string
+    onSuccess: (tokens: any) => void
+}) {
+    const [otp, setOtp] = useState('')
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+
+    async function handleVerify() {
+        setError('')
+
+        if (!otp || !username || !password) {
+            setError('All fields required')
+            return
+        }
+
+        setLoading(true)
+
+        try {
+            const res = await fetch(
+                'http://localhost:8787/auth/register/verify',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        otp,
+                        username,
+                        password,
+                    }),
+                }
+            )
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Verification failed')
+            }
+            onSuccess(data)
+        } catch (err: any) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="w-96 p-6 bg-white rounded-2xl shadow-md">
+            <h1 className="text-xl text-black font-bold mb-4">Verify your email</h1>
+
+            <input
+                placeholder="OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="border text-black p-2 w-full mb-2 rounded-lg"
+            />
+
+            <input
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="border text-black p-2 w-full mb-2 rounded-lg"
+            />
+
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border text-black p-2 w-full mb-2 rounded-lg"
+            />
+
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
+            <button
+                onClick={handleVerify}
+                disabled={loading}
+                className="bg-black text-white w-full py-2 rounded-lg"
+            >
+                {loading ? 'Verifying...' : 'Complete Signup'}
+            </button>
+        </div>
+    )
+}

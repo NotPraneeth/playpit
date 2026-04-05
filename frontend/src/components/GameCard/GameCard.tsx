@@ -36,13 +36,13 @@ export default function GameCard({ game }: { game: Game }) {
                 </div>
 
                 {/* Info */}
-                <div className="mt-2 p-2  font-tertiary">
+                <div className="p-2  font-tertiary">
                     <h3 className="text-base uppercase font-semibold tracking-tight">
                         {game.title}
                     </h3>
 
                     {game.description && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs font-roboto text-gray-500">
                             {game.description}
                         </p>
                     )}

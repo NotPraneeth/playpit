@@ -23,6 +23,7 @@
   --font-secondary: var(--font-aileron);
   --font-tertiary: var(--font-aileron);
   --font-navlogo: var(--font-navLogo);
+  --font-roboto: var(--font-roboto);
 }
 
 /* @media (prefers-color-scheme: dark) {

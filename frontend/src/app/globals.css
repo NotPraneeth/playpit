@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #00592B;
-  --primary-light: #1CE585;
+  --primary: #F1F0EC;
   --secondary: #036734;
+  /* nav buttons light */
+  --primary-light: #1CE585;
 
   --foreground: #F1F0EC;
   --background: var(--primary);
@@ -21,15 +22,16 @@
   --font-primary: var(--font-aileron);
   --font-secondary: var(--font-aileron);
   --font-tertiary: var(--font-aileron);
+  --font-navlogo: var(--font-navLogo);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #00592B;
+    --primary: #F1F0EC;
     --background: var(--primary);
     --foreground: #F1F0EC;
   }
-}
+} */
 
 body {
   background: var(--background);

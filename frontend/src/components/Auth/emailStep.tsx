@@ -28,7 +28,7 @@ export default function EmailStep({
         setLoading(true)
 
         try {
-            const res = await fetch('http://localhost:8787/auth/check-user', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-user`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

@@ -27,7 +27,7 @@ export default function VerifyStep({
 
         try {
             const res = await fetch(
-                'http://localhost:8787/auth/register/verify',
+                `${process.env.NEXT_PUBLIC_API_URL}/auth/register/verify`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

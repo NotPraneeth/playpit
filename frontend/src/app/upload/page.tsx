@@ -25,7 +25,7 @@ export default function UploadPage() {
 
     }, [])
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.SubmitEvent) {
         e.preventDefault()
 
         if (!buildFile) {
@@ -57,23 +57,25 @@ export default function UploadPage() {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="border p-2 w-full"
+                className="border p-2 w-full text-black"
             />
 
             <textarea
                 placeholder="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="border p-2 w-full"
+                className="border p-2 w-full text-black"
             />
 
             <input
                 type="file"
+                className="text-black"
                 onChange={(e) => setBuildFile(e.target.files?.[0] || null)}
             />
 
             <input
                 type="file"
+                className="text-black"
                 onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
             />
 

@@ -18,21 +18,21 @@ export default function Navbar() {
     }
 
     return (
-        <nav className="flex flex-row justify-between items-center mt-5 my-5">
+        <nav className="flex flex-row justify-between items-center mt-5 my-7 border-b-2 border-black px-5">
             <div className="flex items-center">
-                <div className='p-2 px-5 rounded-full bg-[var(--secondary)] uppercase font-tertiary text-base font-semibold tracking-tight'> <Link href='/'> Browse </Link> </div>
-                <div className='p-2 px-5 rounded-full bg-[var(--secondary)] uppercase font-tertiary text-base font-semibold tracking-tight'> <Link href='/'> Contact </Link> </div>
-                <div className='p-2 px-5 rounded-full bg-[var(--secondary)] uppercase font-tertiary text-base font-semibold tracking-tight'> <Link href='/upload'> Upload </Link> </div>
+                <Link href='/'> <div className='p-2 px-4 text-[var(--black)] border-b-0 border-r-0 border-2 uppercase font-tertiary text-base font-semibold tracking-tight'> Browse </div> </Link>
+                <Link href='/'> <div className='p-2 px-4 text-[var(--black)] border-b-0 border-r-0 border-2 uppercase font-tertiary text-base font-semibold tracking-tight'> Contact </div> </Link>
+                <Link href='/upload'> <div className='p-2 px-4 text-[var(--black)] border-b-0 border-2 uppercase font-tertiary text-base font-semibold tracking-tight'> Upload </div> </Link>
             </div>
-            <div className="flex items-center text-[var(--primary-light)] font-bold">
+            <div className="flex items-center text-[var(--black)] font-regular font-navlogo uppercase text-2xl">
                 PLAYPIT
             </div>
             <div className="flex items-center">
                 {
                     isLoggedIn ? (
-                        <div className='p-2 px-4 rounded-lg text-[var(--black)] bg-[var(--white)] uppercase font-tertiary text-base font-semibold tracking-tight' onClick={logout}> Logout </div>
+                        <div className='p-2 cursor-pointer px-4 text-[var(--white)] bg-[var(--black)] uppercase font-tertiary text-base font-semibold tracking-tight mt-1' onClick={logout}> Logout </div>
                     ) : (
-                        <div className='p-2 px-4 rounded-lg text-[var(--black)] bg-[var(--white)] uppercase font-tertiary text-base font-semibold tracking-tight'> <Link href='/auth'> Get Started </Link> </div>
+                        <Link href='/auth'><div className='p-2 px-4 text-[var(--white)] bg-[var(--black)] uppercase font-tertiary text-base font-semibold tracking-tight mt-1'> Get Started </div></Link>
                     )
                 }
             </div>

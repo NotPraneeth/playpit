@@ -9,7 +9,7 @@ type Game = {
 
 export default function GamesList({ games }: { games: Game[] }) {
     return (
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap">
             {games.map((game) => (
                 <GameCard key={game.id} game={game} />
             ))}

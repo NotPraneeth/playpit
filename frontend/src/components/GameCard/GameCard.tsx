@@ -17,10 +17,10 @@ export default function GameCard({ game }: { game: Game }) {
     console.log(imageUrl)
     return (
         <Link href={`/games/${game.id}`}>
-            <div className="group cursor-pointer w-60 rounded-2xl p-2  bg-[var(--white)] border-3 border-black text-black">
+            <div className="group cursor-pointer min-h-68 w-60 p-2  bg-[var(--white)]  outline outline-2 outline-black text-black">
 
                 {/* Thumbnail */}
-                <div className="w-full h-40 bg-gray-200 rounded-t-xl p-5 overflow-hidden relative">
+                <div className="w-full h-40 bg-gray-200 p-5 overflow-hidden relative">
                     {imageUrl ? (
                         <Image
                             src={imageUrl}

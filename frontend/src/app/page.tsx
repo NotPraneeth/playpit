@@ -3,7 +3,7 @@ import GamesList from "@/components/GamesList/GamesList";
 
 export default async function Home() {
 
-  const res = await fetch('http://localhost:8787/games', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/games`, {
     cache: 'no-store',
   });
 

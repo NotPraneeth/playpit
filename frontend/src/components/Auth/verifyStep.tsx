@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { handleAuthSuccess } from '@/lib/authSuccess'
 
 export default function VerifyStep({
     email,
-    onSuccess,
 }: {
     email: string
     onSuccess: (tokens: any) => void
@@ -45,7 +45,7 @@ export default function VerifyStep({
             if (!res.ok) {
                 throw new Error(data.error || 'Verification failed')
             }
-            onSuccess(data)
+            handleAuthSuccess(data)
         } catch (err: any) {
             setError(err.message)
         } finally {

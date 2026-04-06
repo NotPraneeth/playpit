@@ -12,7 +12,10 @@ import type { BaseContext } from './types'
 const app = new Hono<BaseContext>()
 
 app.use('*', cors({
-    origin: 'http://localhost:3000',
+    origin: [
+        'http://localhost:3000',
+        'https://playpit.vercel.app'
+    ],
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }))

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { handleAuthSuccess } from '@/lib/authSuccess'
 
 export default function LoginStep({
     email,
-    onSuccess,
 }: {
     email: string
     onSuccess: (tokens: any) => void
@@ -35,8 +35,7 @@ export default function LoginStep({
             if (!res.ok) {
                 throw new Error(data.error || 'Login failed')
             }
-            console.log('LOGIN RESPONSE:', data)
-            onSuccess(data)
+            handleAuthSuccess(data)
         } catch (err: any) {
             setError(err.message)
         } finally {

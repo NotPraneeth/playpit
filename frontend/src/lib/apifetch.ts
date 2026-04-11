@@ -1,20 +1,40 @@
-import { getAuthHeader } from "./getAuthHeader"
+import { getAuthHeader } from './auth'
+import { tryRefreshToken } from './refreshToken'
+import { handleLogout } from './logout'
 
 export async function apiFetch<T = any>(
     path: string,
-    options?: RequestInit
+    options: RequestInit = {}
 ): Promise<T> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!
-    const authHeaders = await getAuthHeader()
 
-    const res = await fetch(`${API_URL}${path}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...authHeaders,
-            ...(options?.headers || {}),
-        },
-    })
+    const makeRequest = async () => {
+        const authHeaders = getAuthHeader()
+
+        return fetch(`${API_URL}${path}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders,
+                ...(options.headers || {}),
+            },
+        })
+    }
+
+    let res = await makeRequest()
+
+    // 🔥 Handle expired token
+    if (res.status === 401) {
+        const refreshed = await tryRefreshToken()
+
+        if (!refreshed) {
+            handleLogout()
+            throw new Error('Session expired')
+        }
+
+        // retry request with new token
+        res = await makeRequest()
+    }
 
     if (!res.ok) {
         const text = await res.text()
